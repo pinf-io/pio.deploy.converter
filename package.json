@@ -1,0 +1,16 @@
+{
+  "name": "pio.deploy.converter",
+  "version": "0.0.0",
+  "pm": "npm",
+  "dependencies": {
+    "q": "~1.0.0",
+    "fs-extra": "~0.8.1",
+    "ncp": "~0.5.0",
+    "deepcopy": "~0.3.3"
+  },
+  "config": {
+      "pio.deploy.converter": {
+          "name": "nodejs-lib"
+      }
+  }
+}
