@@ -201,9 +201,16 @@ exports.ensure = function(pio, state) {
                                     return NCP(scriptsPath, targetScriptsPath, {
                                         stopOnErr: true,
                                         filter: function(filepath) {
-                                            var path = filepath.substring(scriptsPathLength);
-                                            if (!path) return true;
-                                            return (!!fileinfo[path]);
+                                            function check() {
+                                                var path = filepath.substring(scriptsPathLength);
+                                                if (!path) return true;
+                                                return (!!fileinfo[path]);
+                                            }
+                                            if (check()) {
+                                                console.log("Copy file: ", filepath);
+                                                return true;
+                                            }
+                                            return false;
                                         }
                                     }, function (err) {
                                         if (err) {
@@ -223,7 +230,6 @@ exports.ensure = function(pio, state) {
             }
 
             function copyFromTemplate() {
-                console.log("Copy from template");
                 // NOTE: This resolves all symlinks which is what we want.
                 return Q.denodeify(walk)(PATH.join(defaultConverterPath, "tpl")).then(function(filelist) {
                     function copyFile(path) {                    
@@ -238,6 +244,7 @@ exports.ensure = function(pio, state) {
                                     if (!exists) {
                                         templatePath = PATH.join(defaultConverterPath, "tpl", path);
                                     }
+                                    console.log("Copy", templatePath, "to", targetPath);
                                     return FS.readFile(templatePath, "utf8", function(err, templateSource) {
                                         if (err) return callback(err);
                                         return FS.outputFile(targetPath, templateSource, "utf8", callback);
