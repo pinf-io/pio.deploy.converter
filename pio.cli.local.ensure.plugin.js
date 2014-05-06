@@ -178,15 +178,35 @@ exports.ensure = function(pio, state) {
                         });
                     })().then(function() {
 
+                        var all = [];
+
                         // TODO: Make this more generic based on more meta data.
                         //       Should be able to specifically control which parts of the package descriptor to override.
                         if (state["pio.service"].mappings) {
                             var path = PATH.join(targetSourcePath, "package.1.json");
                             console.log("Writing package descriptor overlay to: ", path);
-                            return Q.denodeify(FS.outputFile)(path, JSON.stringify({
+                            all.push(Q.denodeify(FS.outputFile)(path, JSON.stringify({
                                 mappings: state["pio.service"].mappings
-                            }, null, 4));
+                            }, null, 4)));
                         }
+                        // TODO: Make this more generic based on more meta data.
+                        //       Should be able to specifically control which parts of the package descriptor to override.
+                        if (state["pio.service"]["./package.json"]) {
+                            var path = PATH.join(targetSourcePath, "package.json");
+                            all.push(Q.denodeify(function(callback) {
+                                return FS.exists(path, function(exists) {
+                                    if (!exists) return callback(null);
+                                    return FS.readJson(path, function(err, descriptor) {
+                                        if (err) return callback(err);
+                                        descriptor = pio.API.DEEPMERGE(descriptor || {}, state["pio.service"]["./package.json"]);
+                                        console.log("Updating package descriptor at: ", path);
+                                        return FS.outputFile(path, JSON.stringify(descriptor, null, 4), callback);
+                                    });
+                                });
+                            })());
+                        }
+
+                        return Q.all(all);
                     });
                 }
 
