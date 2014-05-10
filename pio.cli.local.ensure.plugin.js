@@ -136,6 +136,10 @@ exports.ensure = function(pio, state) {
 
                 function copySource() {
                     console.log("Copy source");
+                    if (!converterDescriptor.sourcePath) {
+                        console.log("No source path declared!");
+                        return Q.denodeify(FS.mkdirs)(targetSourcePath);
+                    }
                     return Q.denodeify(function(callback) {
                         console.log("targetSourcePath", targetSourcePath);
                         return FS.mkdirs(targetSourcePath, function(err) {
