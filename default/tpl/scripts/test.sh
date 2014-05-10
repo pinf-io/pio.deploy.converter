@@ -2,7 +2,7 @@
 
 echo "[pio] Notice! No 'test.sh' script for service!"
 
-printenv
+#printenv
 
 echo '<wf name="result">{}</wf>'
 

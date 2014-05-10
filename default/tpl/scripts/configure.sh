@@ -2,4 +2,4 @@
 
 echo "[pio] Notice! No 'configure.sh' script for service!"
 
-printenv
+#printenv

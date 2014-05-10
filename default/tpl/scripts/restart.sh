@@ -2,4 +2,4 @@
 
 echo "[pio] Notice! No 'restart.sh' script for service!"
 
-printenv
+#printenv
