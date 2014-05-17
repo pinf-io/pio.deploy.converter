@@ -20,4 +20,5 @@ for (var alias in descriptor.dependencies) {
 }
 '
 
-npm install --production
+# NOTE: Needed when running as root: `--unsafe-perm` see http://stackoverflow.com/a/19132229/330439
+npm install --production --unsafe-perm
