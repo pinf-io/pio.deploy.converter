@@ -10,6 +10,8 @@ script
     echo $$ > {{=service.env.PIO_SERVICE_RUN_BASE_PATH}}.pid
     export PATH={{=service.env.PATH}}
     export PORT={{=service.env.PORT}}
+    cd {{=service.env.PIO_SERVICE_PATH}}/live/install
+    export PIO_SERVICE_DATA_BASE_PATH={{=service.env.PIO_SERVICE_DATA_BASE_PATH}}
     exec node {{=service.env.PIO_SERVICE_PATH}}/live/install/server.js >> {{=service.env.PIO_SERVICE_LOG_BASE_PATH}}.log 2>&1
 end script
 
