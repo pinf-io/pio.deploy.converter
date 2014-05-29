@@ -20,5 +20,9 @@ for (var alias in descriptor.dependencies) {
 }
 '
 
-# NOTE: Needed when running as root: `--unsafe-perm` see http://stackoverflow.com/a/19132229/330439
-npm install --production --unsafe-perm
+if [ -f Makefile ]; then
+	make install
+else
+	# NOTE: Needed when running as root: `--unsafe-perm` see http://stackoverflow.com/a/19132229/330439
+	npm install --production --unsafe-perm
+fi
