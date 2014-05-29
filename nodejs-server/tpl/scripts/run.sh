@@ -1,5 +1,17 @@
 #!/bin/bash
 
+_MAIN=$(node --eval '
+const PATH = require("path");
+const FS = require("fs");
+var config = JSON.parse(FS.readFileSync(process.env.PIO_CONFIG_PATH));
+var descriptor = config.config["pio.service"].sourceDescriptor;
+if (descriptor && descriptor.config && descriptor.config["pio.deploy.converter"] && descriptor.config["pio.deploy.converter"].main) {
+    process.stdout.write(descriptor.config["pio.deploy.converter"].main);
+} else {
+    process.stdout.write("server.js");
+}
+')
+
 initScript='
 description "{{=service.env.PIO_SERVICE_ID_SAFE}}"
 
@@ -12,7 +24,7 @@ script
     export PORT={{=service.env.PORT}}
     cd {{=service.env.PIO_SERVICE_PATH}}/live/install
     export PIO_SERVICE_DATA_BASE_PATH={{=service.env.PIO_SERVICE_DATA_BASE_PATH}}
-    exec node {{=service.env.PIO_SERVICE_PATH}}/live/install/server.js >> {{=service.env.PIO_SERVICE_LOG_BASE_PATH}}.log 2>&1
+    exec node {{=service.env.PIO_SERVICE_PATH}}/live/install/'$_MAIN' >> {{=service.env.PIO_SERVICE_LOG_BASE_PATH}}.log 2>&1
 end script
 
 pre-start script
