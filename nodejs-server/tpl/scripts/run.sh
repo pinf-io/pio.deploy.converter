@@ -20,8 +20,10 @@ stop on shutdown
 
 script
     echo $$ > {{=service.env.PIO_SERVICE_RUN_BASE_PATH}}.pid
+    # TODO: All requested environment variables should be declared dynamically.
     export PATH={{=service.env.PATH}}
     export PORT={{=service.env.PORT}}
+    export TCP_PORT={{=service.env.TCP_PORT}}
     cd {{=service.env.PIO_SERVICE_PATH}}/live/install
     export PIO_SERVICE_DATA_BASE_PATH={{=service.env.PIO_SERVICE_DATA_BASE_PATH}}
     exec node {{=service.env.PIO_SERVICE_PATH}}/live/install/'$_MAIN' >> {{=service.env.PIO_SERVICE_LOG_BASE_PATH}}.log 2>&1
