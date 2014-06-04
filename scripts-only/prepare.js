@@ -33,7 +33,9 @@ module.exports = function(pio, state) {
 
 	return pio.API.Q.resolve({
 		"pio.deploy.converter": new Res({
-			"sourcePath": defaults.sourcePath || null,
+			// TODO: Default to `null` once smi can reconstruct original dir layout.
+			//"sourcePath": defaults.sourcePath || null,
+			"sourcePath": defaults.sourcePath || ".",
 			"scriptsPath": defaults.scriptsPath || "."
 		})
 	});
