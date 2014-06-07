@@ -56,7 +56,9 @@ exports.ensure = function(pio, state) {
                     serviceDescriptor.finalChecksum = convertedDescriptor.config["pio.service"].finalChecksum;
                     converterDescriptor.didConvert = false;
 
-                    console.log("Final checksum after skipped conversion: " + serviceDescriptor.finalChecksum);
+                    if (state["pio.cli.local"].verbose) {
+                        console.log("Final checksum after skipped conversion: " + serviceDescriptor.finalChecksum);
+                    }
 
                     return formatResponse();
                 }
@@ -102,7 +104,9 @@ exports.ensure = function(pio, state) {
                 ASSERT.notEqual(typeof converterDescriptor.sourcePath, "undefined", "'state[pio.deploy.converter].sourcePath' must be set!");
                 ASSERT.notEqual(typeof converterDescriptor.scriptsPath, "undefined", "'state[pio.deploy.converter].scriptsPath' must be set!");
 
-                console.log(("Converting package using: " + converterPath).magenta);
+                if (state["pio.cli.local"].verbose) {
+                    console.log(("Converting package using: " + converterPath).magenta);
+                }
 
                 // TODO: Because we are adding assets to the package here we need to track these and add them to the checksum.
                 //       Also we need to add source file paths for this converter module to the dependency history so that if any
@@ -110,7 +114,9 @@ exports.ensure = function(pio, state) {
                 // WORKAROUND: If converter code is changed force a conversion and deploy with: `pio deploy`
 
                 function prepareTarget() {
-                    console.log("Prepare target");
+                    if (state["pio.cli.local"].verbose) {
+                        console.log("Prepare target");
+                    }
                     return Q.denodeify(function(callback) {
                         return FS.exists(targetBasePath, function(exists) {
                             if (!exists) {
@@ -135,17 +141,25 @@ exports.ensure = function(pio, state) {
                 }
 
                 function copySource() {
-                    console.log("Copy source");
+                    if (state["pio.cli.local"].verbose) {
+                        console.log("Copy source");
+                    }
                     if (!converterDescriptor.sourcePath) {
-                        console.log("No source path declared!");
+                        if (state["pio.cli.local"].verbose) {
+                            console.log("No source path declared!");
+                        }
                         return Q.denodeify(FS.mkdirs)(targetSourcePath);
                     }
                     return Q.denodeify(function(callback) {
-                        console.log("targetSourcePath", targetSourcePath);
+                        if (state["pio.cli.local"].verbose) {
+                            console.log("targetSourcePath", targetSourcePath);
+                        }
                         return FS.mkdirs(targetSourcePath, function(err) {
                             if (err) return callback(err);
                             var sourcePath = FS.realpathSync(PATH.join(state["pio.service"].path, converterDescriptor.sourcePath));
-                            console.log("sourcePath", sourcePath);
+                            if (state["pio.cli.local"].verbose) {
+                                console.log("sourcePath", sourcePath);
+                            }
                             return FS.exists(sourcePath, function(exists) {
                                 if (!exists) {
                                     return callback(null);
@@ -174,7 +188,9 @@ exports.ensure = function(pio, state) {
                                             return callback(err);
                                         }
                                         var path = PATH.join(targetSourcePath, ".pio.filelist");
-                                        console.log("Writing filelist to: ", path);
+                                        if (state["pio.cli.local"].verbose) {
+                                            console.log("Writing filelist to: ", path);
+                                        }
                                         return FS.outputFile(path, JSON.stringify(fileinfo, null, 4), callback);
                                     });
                                 });
@@ -188,7 +204,9 @@ exports.ensure = function(pio, state) {
                         //       Should be able to specifically control which parts of the package descriptor to override.
                         if (state["pio.service"].mappings) {
                             var path = PATH.join(targetSourcePath, "package.1.json");
-                            console.log("Writing package descriptor overlay to: ", path);
+                            if (state["pio.cli.local"].verbose) {
+                                console.log("Writing package descriptor overlay to: ", path);
+                            }
                             all.push(Q.denodeify(FS.outputFile)(path, JSON.stringify({
                                 mappings: state["pio.service"].mappings
                             }, null, 4)));
@@ -203,7 +221,9 @@ exports.ensure = function(pio, state) {
                                     return FS.readJson(path, function(err, descriptor) {
                                         if (err) return callback(err);
                                         descriptor = pio.API.DEEPMERGE(descriptor || {}, state["pio.service"]["./package.json"]);
-                                        console.log("Updating package descriptor at: ", path);
+                                        if (state["pio.cli.local"].verbose) {
+                                            console.log("Updating package descriptor at: ", path);
+                                        }
                                         return FS.outputFile(path, JSON.stringify(descriptor, null, 4), callback);
                                     });
                                 });
@@ -215,23 +235,31 @@ exports.ensure = function(pio, state) {
                 }
 
                 function copyScripts() {
-                    console.log("Copy scripts");
+                    if (state["pio.cli.local"].verbose) {
+                        console.log("Copy scripts");
+                    }
                     return Q.denodeify(function(callback) {
                         if (!converterDescriptor.scriptsPath) {
                             return callback(null);
                         }
-                        console.log("targetScriptsPath", targetScriptsPath);
+                        if (state["pio.cli.local"].verbose) {
+                            console.log("targetScriptsPath", targetScriptsPath);
+                        }
                         return FS.mkdirs(targetScriptsPath, function(err) {
                             if (err) return callback(err);
                             return FS.realpath(PATH.join(state["pio.service"].path, converterDescriptor.scriptsPath), function(err, scriptsPath) {
                                 if (err) {
                                     if (err.code === "ENOENT") {
-                                        console.log("Skip copy scripts as path not found: " + PATH.join(state["pio.service"].path, converterDescriptor.scriptsPath));
+                                        if (state["pio.cli.local"].verbose) {
+                                            console.log("Skip copy scripts as path not found: " + PATH.join(state["pio.service"].path, converterDescriptor.scriptsPath));
+                                        }
                                         return callback(null);
                                     }
                                     return callback(err);
                                 }
-                                console.log("scriptsPath", scriptsPath);
+                                if (state["pio.cli.local"].verbose) {
+                                    console.log("scriptsPath", scriptsPath);
+                                }
                                 return FS.exists(scriptsPath, function(exists) {
                                     if (!exists) {
                                         return callback(null);
@@ -255,7 +283,9 @@ exports.ensure = function(pio, state) {
                                                     return (!!fileinfo[path]);
                                                 }
                                                 if (check()) {
-                                                    console.log("Copy file: ", filepath);
+                                                    if (state["pio.cli.local"].verbose) {
+                                                        console.log("Copy file: ", filepath);
+                                                    }
                                                     return true;
                                                 }
                                                 return false;
@@ -267,7 +297,9 @@ exports.ensure = function(pio, state) {
                                                 return callback(err);
                                             }
                                             var path = PATH.join(targetScriptsPath, ".pio.filelist");
-                                            console.log("Writing filelist to: ", path);
+                                            if (state["pio.cli.local"].verbose) {
+                                                console.log("Writing filelist to: ", path);
+                                            }
                                             return FS.outputFile(path, JSON.stringify(fileinfo, null, 4), callback);
                                         });
                                     });
@@ -292,7 +324,9 @@ exports.ensure = function(pio, state) {
                                         if (!exists) {
                                             templatePath = PATH.join(defaultConverterPath, "tpl", path);
                                         }
-                                        console.log("Copy", templatePath, "to", targetPath);
+                                        if (state["pio.cli.local"].verbose) {
+                                            console.log("Copy", templatePath, "to", targetPath);
+                                        }
                                         return FS.readFile(templatePath, "utf8", function(err, templateSource) {
                                             if (err) return callback(err);
                                             return FS.outputFile(targetPath, templateSource, "utf8", callback);
@@ -355,7 +389,9 @@ exports.ensure = function(pio, state) {
                     return generateFileInfo().then(function(fileInfo) {
                         // Update checksum based on all exported files.
                         serviceDescriptor.finalChecksum = fileInfo.checksum;
-                        console.log("Updated checksum after convert to: " + serviceDescriptor.finalChecksum);
+                        if (state["pio.cli.local"].verbose) {
+                            console.log("Updated checksum after convert to: " + serviceDescriptor.finalChecksum);
+                        }
                     });
 
                 }).then(function() {
