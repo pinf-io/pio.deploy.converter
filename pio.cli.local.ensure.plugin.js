@@ -49,8 +49,9 @@ exports.ensure = function(pio, state) {
                 var convertedDescriptorPath = PATH.join(targetBasePath, ".pio.json");
 
                 if (!FS.existsSync(convertedDescriptorPath)) {
-                    console.log("Converted descriptor not found. Convert service.".yellow);
-
+                    if (state["pio.cli.local"].verbose) {
+                        console.log("Converted descriptor not found thus we convert the service ...".yellow);
+                    }
                 } else {
                     var convertedDescriptor = FS.readJsonSync(convertedDescriptorPath);
                     serviceDescriptor.finalChecksum = convertedDescriptor.config["pio.service"].finalChecksum;
