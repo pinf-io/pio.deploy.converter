@@ -11,7 +11,8 @@ for (var alias in descriptor.dependencies) {
 	var liveServicePath = PATH.join(config.config["pio.vm"].prefixPath, "services", alias, "live/install");
 	if (FS.existsSync(liveServicePath)) {
 		var linkPath = PATH.join(process.env.PIO_SERVICE_PATH, "build/node_modules", alias);
-		console.log("Linking " + liveServicePath + " to " + linkPath);
+		try { FS.unlinkSync(linkPath); } catch(err) {}
+		console.log("Linking npm package " + liveServicePath + " to " + linkPath);
 		if (!FS.existsSync(PATH.dirname(linkPath))) {
 			FS.mkdirSync(PATH.dirname(linkPath));
 		}
