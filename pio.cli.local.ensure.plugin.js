@@ -401,13 +401,13 @@ exports.ensure = function(pio, state) {
 
                     return formatResponse();
                 }).then(function(response) {
-    /*
+    
                     var pioDescriptor = pio.API.DEEPMERGE({
                         config: state
                     }, {
                         config: response
                     });
-    */
+    
                     function convertState(state) {
                         if (typeof converterResponse["pio.deploy.converter"].convertState !== "function") {
                             return pio.API.Q.resolve(state);
@@ -417,7 +417,10 @@ exports.ensure = function(pio, state) {
 
                     return convertState(response).then(function(response) {
 
-    //                    FS.outputFileSync(PATH.join(serviceDescriptor.path, ".pio.json"), JSON.stringify(pioDescriptor, null, 4));
+                        // NOTE: We write the descriptor here but it gets written again on deploy.
+                        // TODO: On deploy we should not be doing anything that we cannot already do here.
+                        //       If deploy needs to add more data it should write a second descriptor.
+                        FS.outputFileSync(PATH.join(serviceDescriptor.path, ".pio.json"), JSON.stringify(pioDescriptor, null, 4));
 
                         return response;
                     });
