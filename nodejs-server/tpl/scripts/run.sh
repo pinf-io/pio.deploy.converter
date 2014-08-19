@@ -12,6 +12,21 @@ if (descriptor && descriptor.config && descriptor.config["pio.deploy.converter"]
 }
 ')
 
+
+launchScript='
+#!/bin/bash -e
+# TODO: All requested environment variables should be declared dynamically.
+export PATH={{=service.env.PATH}}
+export PORT={{=service.env.PORT}}
+export TCP_PORT={{=service.env.TCP_PORT}}
+cd {{=service.env.PIO_SERVICE_PATH}}/live/install
+export PIO_SERVICE_DATA_BASE_PATH={{=service.env.PIO_SERVICE_DATA_BASE_PATH}}
+node {{=service.env.PIO_SERVICE_PATH}}/live/install/'$_MAIN' >> {{=service.env.PIO_SERVICE_LOG_BASE_PATH}}.log 2>&1
+'
+echo "$launchScript" | sudo tee $PIO_SCRIPTS_PATH/_launch.sh
+sudo chmod ug+x $PIO_SCRIPTS_PATH/_launch.sh
+
+
 initScript='
 description "{{=service.env.PIO_SERVICE_ID_SAFE}}"
 
@@ -20,13 +35,7 @@ stop on shutdown
 
 script
     echo $$ > {{=service.env.PIO_SERVICE_RUN_BASE_PATH}}.pid
-    # TODO: All requested environment variables should be declared dynamically.
-    export PATH={{=service.env.PATH}}
-    export PORT={{=service.env.PORT}}
-    export TCP_PORT={{=service.env.TCP_PORT}}
-    cd {{=service.env.PIO_SERVICE_PATH}}/live/install
-    export PIO_SERVICE_DATA_BASE_PATH={{=service.env.PIO_SERVICE_DATA_BASE_PATH}}
-    exec node {{=service.env.PIO_SERVICE_PATH}}/live/install/'$_MAIN' >> {{=service.env.PIO_SERVICE_LOG_BASE_PATH}}.log 2>&1
+    exec /opt/services/pio.server/packages/mon/mon --mon-pidfile "'$PIO_SERVICE_RUN_BASE_PATH'.pid" '$PIO_SCRIPTS_PATH'/_launch.sh  >> '$PIO_SERVICE_LOG_BASE_PATH'.launch.log 2>&1 
 end script
 
 pre-start script
@@ -34,7 +43,7 @@ pre-start script
 end script
 
 pre-stop script
-    rm -f {{=service.env.PIO_SERVICE_RUN_BASE_PATH}}.pid
+    kill `cat {{=service.env.PIO_SERVICE_RUN_BASE_PATH}}.pid`; rm -f {{=service.env.PIO_SERVICE_RUN_BASE_PATH}}.pid
     echo "\\n['`date -u +%Y-%m-%dT%T.%3NZ`'] (/etc/init/app-{{=service.env.PIO_SERVICE_ID_SAFE}}.conf) ^^^^^^^^^^ STOPPING ^^^^^^^^^^\\n\\n" >> {{=service.env.PIO_SERVICE_LOG_BASE_PATH}}.log
 end script
 '
