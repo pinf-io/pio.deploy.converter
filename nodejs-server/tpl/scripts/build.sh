@@ -20,11 +20,11 @@ function linkCommands(alias) {
         var linkPath = PATH.join(binBasePath, command);
         var fromPath = PATH.join(descriptorPath, "..", descriptor.bin[command]);
 
-        console.log("Linking '" + fromPath + "' to '" + linkPath + "'.");
+        console.log("Linking " + fromPath + " to " + linkPath + ".");
 
         if (!FS.existsSync(linkPath)) {
             if (!FS.existsSync(fromPath)) {
-                return callback(new Error("Command declared as '" + command + "' in '" + descriptorPath + "' not found at '" + fromPath + "'!"));
+                return callback(new Error("Command declared as " + command + " in " + descriptorPath + " not found at " + fromPath + "!"));
             }
             if (!FS.existsSync(PATH.dirname(linkPath))) {
                 FS.mkdirSync(PATH.dirname(linkPath));
@@ -55,9 +55,11 @@ for (var alias in descriptor.dependencies) {
 }
 '
 
-if [ -f Makefile ]; then
-	make install
+if [ -f bin/install.sh ]; then
+    bin/install.sh
+elif [ -f Makefile ]; then
+    make install
 else
-	# NOTE: Needed when running as root: `--unsafe-perm` see http://stackoverflow.com/a/19132229/330439
-	npm install --production --unsafe-perm
+    # NOTE: Needed when running as root: `--unsafe-perm` see http://stackoverflow.com/a/19132229/330439
+    npm install --production --unsafe-perm
 fi
